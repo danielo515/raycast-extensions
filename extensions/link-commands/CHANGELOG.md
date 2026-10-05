@@ -1,5 +1,21 @@
 # Link Commands Changelog
 
+## [Readable brand suggestion] - 2026-10-05
+
+### Added
+
+- Opt-in **Titles → Start titles with the site** preference, off by default: for `http(s)` targets the written title becomes `<host> · <name>` — `claude.ai · Usage` — or just the host when the name is empty or is only the brand. Folders, surface routers and already-prefixed names are untouched, the create form previews the written title, and filenames still derive from the bare name so nothing already created moves.
+
+### Fixed
+
+- The **Package** suggestion on the create form now uses the site's own name where the page states one — `https://sendtestemail.com/` suggests `SendTestEmail` rather than the bare domain label — falling back to the capitalised domain when the page cannot be read. File names and icon folders still use the lowercase form, so only the displayed subtitle changes and nothing already created moves.
+
+## [Raycast 2 Deeplink Fix] - 2026-10-01
+
+### Fixed
+
+- **Run** and **Copy Deeplink** now work on Raycast 2. The extension detects `environment.raycastVersion` and emits the correct deeplink format: `raycast://script-commands/<filename>` on v1, `raycast://extensions/raycast/script-commands/<title-slug>` on v2. Title slugs are derived from `@raycast.title` using the official slug algorithm and disambiguated when duplicates exist.
+
 ## [Suggested Titles] - 2026-09-28
 
 ### Added

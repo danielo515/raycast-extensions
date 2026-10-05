@@ -2,6 +2,7 @@ import {
   Action,
   ActionPanel,
   Alert,
+  Color,
   confirmAlert,
   getPreferenceValues,
   Icon,
@@ -17,8 +18,10 @@ import { deleteUpload, getStatus, isConnectionError, listDestinations, listUploa
 import type { OutputFormat, Upload } from "./api/types";
 import { BucketBrowser } from "./components/BucketBrowser";
 import { ConnectionEmptyView } from "./components/ConnectionEmptyView";
+import { QRCodeView } from "./components/QRCodeView";
 import { UploadForm } from "./components/UploadForm";
 import { showAktarFailure } from "./lib/errors";
+import { formatExpiryDate } from "./lib/expiry";
 import { destinationIcon, FORMAT_TITLES, formatBytes, isImageUpload, parentPrefix, thumbnail } from "./lib/format";
 import { resolveFormat } from "./lib/output";
 
@@ -115,6 +118,14 @@ export default function Command() {
               isShowingDetail
                 ? undefined
                 : [
+                    ...(upload.expiresAt
+                      ? [
+                          {
+                            tag: { value: `Deletes ${formatExpiryDate(upload.expiresAt)}`, color: Color.Orange },
+                            tooltip: `Aktar deletes this file on ${new Date(upload.expiresAt).toLocaleString()}`,
+                          },
+                        ]
+                      : []),
                     { text: formatBytes(upload.size) },
                     { date: new Date(upload.createdAt), tooltip: new Date(upload.createdAt).toLocaleString() },
                   ]
@@ -126,6 +137,12 @@ export default function Command() {
                   <Action.CopyToClipboard title={`Copy ${FORMAT_TITLES[format]}`} content={upload.formats[format]} />
                   <Action.Paste title={`Paste ${FORMAT_TITLES[format]}`} content={upload.formats[format]} />
                   <Action.OpenInBrowser url={upload.url} />
+                  <Action.Push
+                    title="Show QR Code"
+                    icon={Icon.Mobile}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "q" }}
+                    target={<QRCodeView name={upload.filename} link={upload.url} />}
+                  />
                   <Action
                     title={isShowingDetail ? "Hide Details" : "Show Details"}
                     icon={Icon.Sidebar}
@@ -213,6 +230,14 @@ function UploadDetail({ upload }: { upload: Upload }) {
           <List.Item.Detail.Metadata.Label title="Size" text={formatBytes(upload.size)} />
           <List.Item.Detail.Metadata.Label title="Type" text={upload.mimeType} />
           <List.Item.Detail.Metadata.Label title="Uploaded" text={new Date(upload.createdAt).toLocaleString()} />
+          {upload.expiresAt && (
+            <List.Item.Detail.Metadata.TagList title="Deletes">
+              <List.Item.Detail.Metadata.TagList.Item
+                text={new Date(upload.expiresAt).toLocaleString()}
+                color={Color.Orange}
+              />
+            </List.Item.Detail.Metadata.TagList>
+          )}
           <List.Item.Detail.Metadata.Separator />
           <List.Item.Detail.Metadata.Label title="Destination" text={upload.destinationName} />
           <List.Item.Detail.Metadata.Link title="Link" text={upload.url} target={upload.url} />
